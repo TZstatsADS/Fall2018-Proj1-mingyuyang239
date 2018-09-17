@@ -78,9 +78,9 @@ datatable(hm_data)
 
 ```{r bag of words, warning=FALSE, message=FALSE}
 bag_of_words <-  hm_data %>%
-  unnest_tokens(word, text)
+  unnest_tokens(word, text) # decompose text column into seperate words 
 
-word_count <- bag_of_words %>%
+word_count <- bag_of_words %>% # shows the number of words appear 
   count(word, sort = TRUE)
 ```
 
