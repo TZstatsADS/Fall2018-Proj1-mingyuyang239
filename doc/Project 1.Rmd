@@ -7,14 +7,15 @@ output:
   html_document: default
 ---
 
-#What are the things that make single parent happy? Are they any different than these for married ones? What about comparing people who are single to people who are married. 
+#An Analysis on Finding Happiness As Single Parents? How Do Experiences that Make Them Happy Compare to These for Married Parents and Non-parents?
 
 
-According to data published by the United States' Census Bureau, around 30% of children in the United Staes are raised by single parent. There are many debates on whether single parents are as "good" as married ones. Those debates surround on topis including finanticial stability, psychological effect on childrens, social mobility and etc. These topic typically focus on the state of children instead of the parent herself/himself. An interesting question come in mind is what are the things that make single parent happy? Are they any different than those for married ones? How about just comparing people who are sinlge and who are married?
+According to data published by the United States' Census Bureau, around 30% of children in the United States are raised by single parents. There are many debates on whether single parents are as "good" as married ones. Those debates surround on topics including financial stability, psychological effect on children, social mobility and etc. These topics typically focus on the state of children instead of the parent herself/himself. An interesting question come in mind is what are the things that make single parents happy? Are they any different than those for married ones? How about comparing them to non-parents?
 
-We will use the dataset HappyDB for this instresting analysis. HappyDB is a corpus of 100,000 happy moments gatherd by the Amazon Mechinical Turk in 2017. We will study the entire dataset and then compare data provided by single parent and married parent respectively. We will then compare study single people and married ones and see if they exsit similar trend with people with children. 
+For our study, we will use the dataset HappyDB. It is a corpus of 100,000 happy moments gathered by the Amazon Mechanical Turk in 2017. We will compare data provided by single parent and married parent respectively. We will then study data provided by single and married non-parents and see if there exists similar trend as people with children. 
 
-The current R version I'm using and the necessary packages used are listed below. The data are imported and stored in the dataframe "hm_data". We did some cleaning of the data. We removed punctuations, extra whitesapce, empty wors and numbers and converted upper case to lower case. We reduce words to ehri stem and remove meaningless stop words. We further combine the demographic data with the original data set. We then imported the demographic data to our cleaned data. We will use this cleaned data for further analysis. 
+The current R version I'm using and the necessary packages used are listed below. The original data are imported and we did some cleaning of the data. We removed punctuations, extra whitespace, empty words and numbers and converted upper case to lower case. We reduced words to their stems and removed meaningless stop words. We further combined the demographic data with the original data set. We then imported the demographic data to our cleaned data. We will use this cleaned and combined data for our analysis below.
+
 
 ```{r load libraries,warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -32,17 +33,19 @@ library(ggplot2)
 library(dplyr)
 library(beeswarm)
 library(gplots)
+library(reshape2)
 
 R.Version()$version.string
 ```
 
-```{r load data, warning=FALSE, message=FALSE}
+```{r load data, warning=FALSE, message=FALSE, echo=FALSE}
+#combine data with demo data
 hm_data <- read_csv("../output/processed_moments.csv")
 urlfile<-'https://raw.githubusercontent.com/rit-public/HappyDB/master/happydb/data/demographic.csv'
 demo_data <- read_csv(urlfile)
 ```
 
-```{r combining data, warning=FALSE, message=FALSE}
+```{r combining data, warning=FALSE, message=FALSE,echo=FALSE}
 hm_data <- hm_data %>%
   inner_join(demo_data, by = "wid") %>%
   select(wid,
@@ -64,55 +67,41 @@ hm_data <- hm_data %>%
                                         months_3 = "3m", hours_24 = "24h"))
 ```
 
-```{r}
+```{r, echo=FALSE}
+#substract data sets 
 hm_data.sp <- hm_data[hm_data$marital == "single" & hm_data$parenthood == "y",]
 hm_data.mp <- hm_data[hm_data$marital == "married" & hm_data$parenthood == "y",]
 hm_data.cp <- rbind(hm_data.sp,hm_data.mp)
-
 
 hm_data.s <- hm_data[hm_data$marital == "single" & hm_data$parenthood == "n",]
 hm_data.m <- hm_data[hm_data$marital == "married" & hm_data$parenthood == "n",]
 hm_data.c <- rbind(hm_data.s,hm_data.m)
 
-dim(hm_data.sp)
-dim(hm_data.mp)
-dim(hm_data.cp )
-
-dim(hm_data.s)
-dim(hm_data.m)
-dim(hm_data.c )
-
-
+hm_data.cp$status <- ifelse(hm_data.cp$marital == "single", "Single Parents", "Married Parents")
+hm_data.c$status <-ifelse(hm_data.c$marital == "single", "Single Non-parents", "Married Non-parents")
+alldata <- rbind(hm_data.cp,hm_data.c)
 ```
 
 #General Analysis
 ##Length of Sentences
 
-The length of sentences are stored in the count column of our cleaned dataset and we visualized this through a scatterplot, where each color represent a group within the plot. Married parents wrote more words in descriping their experiences.
-
+The length of sentences are stored in the count column of our cleaned dataset and we visualized this through a scatterplot, where each color represent a group within the plot. 
 
 ```{r}
-library(shiny)
-library(plotly)
-hm_data.cp$status <- ifelse(hm_data.cp$marital == "single", "Single Parents", "Married Parents")
-hm_data.c$status <-ifelse(hm_data.c$marital == "single", "Single Non-parents", "Married Non-parents")
-alldata <- rbind(hm_data.cp,hm_data.c)
-
-
-ggplot(alldata, aes(status, count, color = status)) +
+ggplot(alldata, aes(count, status, color = status)) +
   geom_point() + 
-  geom_jitter(width = 1, height = 1) + 
-  ggtitle("Length of Sentences for Four Groups") 
+  geom_jitter(width = 0.5, height = 0.3) + 
+  ggtitle("Length of Sentences for Four Groups") +
+  labs(x = "Length of Sentences", y = "Demographic Groups")
 
 ```
+From the plot, we observe that married parents wrote more words in descripting their experiences. These may be because we have more data on married parents comparing to the other three groups. 
 
 ## Word Frequency with Wordcloud.
 
-We are going to examine the frequencies of words for each group and visualize this the with wordcloud.   
+We are going to examine the frequencies of words for each group and generate a word cloud for each demographic group.   
 
-For single parents, the top three most frequent appearance words are "day", "time" and "friends". The too three words are "day", "time" and "son" for married parents. The word "friend" drops to fifth place for married parents. This could indicates friends may be a more important aspect of life for single parent.   
 
-Let's take a look at the comparison between single non-parents and married non-parents. The top three most frequent words are the same for both groups. They are "date", "time" and "friends". Besides the obvious finding that non-parents would not have the term "son" or "daughtor" on their list, the words "family", "husband", and "wife" do not make it to the top three. For people who do not have chidren, even if they are married, they seems to put more emphasize on friends instead of families. 
 
 ```{r}
 #wordcloud for single parents. 
@@ -141,7 +130,7 @@ wordcloud(words = d.mp$word, freq = d.mp$freq, min.freq = 1,
           max.words=100, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
 ```
-
+The top three most frequent appearance words are "day", "time" and "friends" for single-parents and are "day", "time" and "son" for married parents. The word "friend" drops to the fifth place for married parents. This indicates friends may be a more important aspect of life for single parent. 
 
 ```{r}
 #wordcould for single non-parents.
@@ -173,18 +162,11 @@ wordcloud(words = d.m$word, freq = d.m$freq, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 
 ```
-
+Let's take a look at the comparison between single non-parents and married non-parents. The top three most frequent words are the same for both groups. They are "date", "time" and "friends". Besides the obvious finding that non-parents would not have the term "son" or "daughter" on their lists, the words "family", "husband", and "wife" did not make it to the top three. For people who don't have children, even if they are married, they seems to put more emphasize on friends instead of families.
 
 #Sentiment Analysis 
 
-We will measure the sentiments of these happy moments. Although they should all exibihit positive and joyful sentiment as inherient by the study, the intensities of the sentments may vary between groups. 
-
-We first compare the single parents and married ones. There isn't a significant diffrence by looking at the boxplot. There are a lot more people who identified themselves as married parents than single ones. Lookng at the mean of the sentiment score, both groups have higher sentiment score comparing to the entire samples. Married couple has a slightly higher score than the single ones. We neglect other factors such as docioeconomic status which may also paly a role this analysis. 
-
-We then take a look at the sentiment scores of non-parents individuals. An interesting finding is that non-parents individuals has lower scores the entire sample. Married individuals still has high score than single ones but the diffirence is really small. 
-
-Let's look at the happoest moment for each group. Not suprising, the happiest moments for parents, married or not, include mensioning family members.The happiest moments for non-parents both discribe specific experiences.
-
+We will measure the sentiments of these happy moments. Although they should all exhibit positive and joyful sentiment indicating by the study, the intensities of the sentiments may vary between groups. 
 
 
 ```{r}
@@ -196,18 +178,11 @@ boxplot(sentiment.all, ylim=c(-5,20), main = "All Samples", ylab = "All Samples"
 sentiment.sp <- get_sentiment(hm_data.sp$text, method = "syuzhet")
 boxplot(sentiment.sp, ylim=c(-5,20), main = "Sentimental Analysis-Single Parent", ylab = "Single Parent")
 
-
 sentiment.mp <- get_sentiment(hm_data.mp$text, method = "syuzhet")
 boxplot(sentiment.mp, ylim=c(-5,20), main = "Sentimental Analysis-Married Parent", ylab = "Married Parent")
-
-mean(sentiment.all)
-mean(sentiment.sp)
-mean(sentiment.mp)
-
-#find the happiest sentences
-hm_data[which.max(sentiment.sp),]$original_hm
-hm_data[which.max(sentiment.mp),]$original_hm
 ```
+We first compare single parents to married ones. There isn't a significant difference by looking at the boxplot. Looking at the mean of the sentiment score, both groups of parents have higher sentiment score comparing to the entire samples set. Married couple has a slightly higher score than the single ones. We neglect other factors such as socioeconomic status which may also play a role in this analysis. 
+
 
 ```{r}
 par(mfrow = c(1,3))
@@ -217,23 +192,35 @@ boxplot(sentiment.all, ylim=c(-5,20), main = "All Samples", ylab = "All Samples"
 sentiment.s <- get_sentiment(hm_data.s$text, method = "syuzhet")
 boxplot(sentiment.s, ylim=c(-5,20), main = "Sentimental Analysis-Single Non-parents", ylab = "Single Non-parent")
 
-
 sentiment.m <- get_sentiment(hm_data.m$text, method = "syuzhet")
 boxplot(sentiment.m, ylim=c(-5,20), main = "Sentimental Analysis-Non-parents", ylab = "Non-parents")
+```
+We then take a look at the sentiment scores of non-parents individuals. An interesting finding is that non-parents individuals has lower scores the entire sample set. Married individuals still has high score than single ones but the difference is really small.
 
+```{r, echo=false}
+mean(sentiment.all)
+mean(sentiment.sp)
+mean(sentiment.mp)
 mean(sentiment.all)
 mean(sentiment.s)
 mean(sentiment.m)
-
-
-#find the happiest sentences
-hm_data[which.max(sentiment.s),]$original_hm
-hm_data[which.max(sentiment.m),]$original_hm
 ```
 
+```{r}
+#find the happiest sentences for parents
+hm_data[which.max(sentiment.sp),]$original_hm
+hm_data[which.max(sentiment.mp),]$original_hm
+
+#find the happiest sentences for non-parents
+hm_data[which.max(sentiment.s),]$original_hm
+hm_data[which.max(sentiment.m),]$original_hm
+
+```
+Let's look at the happiest moment for each group. Not surprising, the happiest moments for parents, married or not, include mentioning family members. The happiest moments for non-parents both describe specific experiences.
 
 # Topic Modeling 
-We fit the LDA model. Since we have to set the number of topics manually, we will try setting three to six numbers. It turns out that setting three topics number make the most sense. We manully tag each topic as "families", "friend" and "Experience" because of word that appear most frequenct in those topics. 
+
+We will extract topics with fitting a LDA model. We will try setting the numbers of topics as three to six. It turns out that setting three topics number make the most sense. The beta matrix tells us the probabilities of each word being generated from each topic. We see that the word accepted is generated from the topic 1 with a probability of 7.521082e-05. 
 
 
 ```{r}
@@ -249,29 +236,22 @@ combine.data <- combine  %>%
                 summarise(text = paste(text, collapse = " "), status = mean(status))
 
 combine.docs <- Corpus(VectorSource(combine.data$text))
-
 dtm.combine <- DocumentTermMatrix(combine.docs)
-```
 
-
-```{r}
-
-lda <- LDA(dtm.combine, k = 3, control = list(seed = 1234))
-lda 
+lda <- LDA(dtm.combine, k = 3, control = list(seed = 2))
 ```
 
 ```{r}
-
-topics <- tidy(lda, matrix = c("beta", "gamma"))
-topics
+# the beta matrix 
+topics <- tidy(lda, matrix = "beta")
+head(topics,6)
 ```
-
-Find the top ten words in each topic. 
+We visualized the top five most frequent words in each topics. According to those words, we manually tag each topic as "Family", "Job" and "Friend".
 ```{r}
-
+#Find the top ten words in each topic. 
 top.words <- topics %>%
   group_by(topic) %>%
-  top_n(5, beta) %>%
+  top_n(10, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
 
@@ -283,12 +263,10 @@ top.words %>%
   coord_flip()
 ```
 
-
-
-From the heat map, it seems like single parents single and married parents mentions more about families where non-parents mentions more about friends and experiences. 
+We use a heatmap to visualized which topic is mensioned more frequently for each demographic group. From the heat map, we observe that "friend" is a topic that are mentioned the most for all four groups. Married parents seems to find more happiness in families than the other three groups.
 ```{r}
 topic.prob <- as.data.frame(lda@gamma)
-topics.tag <- c("Families", "Friends", "Experiences")
+topics.tag <- c("Family", "Job", "Friend")
 lda.topics <- as.matrix(topics(lda))
 combine.data$topic <- as.vector(lda.topics)
 combine.data$ldatag <- topics.tag[lda.topics]
@@ -300,35 +278,33 @@ combine.data.corpus <- cbind(combine.data,topic.prob)
 
 ```{r}
 topic.status<-tbl_df(combine.data.corpus)%>%
-              select(status, Families:Experiences)%>%
+              select(status, Family:Friend)%>%
               group_by(status)%>%
               summarise_all(funs(mean))
-
-
 topic.status=as.data.frame(topic.status)
 
 rownames(topic.status)<-topic.status$status
-heatmap.2(as.matrix(topic.status[,-1]), 
-           scale = "column", key=F, 
-           col = "heat.colors",
-           cexRow = 0.9, cexCol = 0.9, margins = c(8, 8),
-           trace = "none", density.info = "none")
 
+
+as.mat <- as.matrix(topic.status[,-1])
+rownames(as.mat) <- c('Single Parents','Married Parents','Single Non-parents','Married Non-parents')
+melted_topic <- melt(as.mat)
+ggplot(data = melted_topic, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
 ```
 
+#Conclusion
 
-#clustering 
+Married parent seems to use longer sentences in describing their happy moments. There is not a significant difference in sentences length between the other three groups.
 
-```{r}
-library(factoextra)
-km.res=kmeans(scale(topic.status[,-1]), iter.max=200, centers=3)
-fviz_cluster(km.res, stand=T, repel= TRUE, data = topic.status[,-1], show.clust.cent=FALSE)
+Friend is an important aspect for single parents than married parents. Family related words appear less frequent for people who are married but don't have children.   
 
+Moments describing by parents are more joyful than non-parents. Moments written by people who are married are more joyful than people who are single.   
 
-```
+For the three topics "friend", "job" and "Friend", "Friend" is a topic that are mentioned the most for all four groups. Married parents seems to find more happiness in families than the other three groups.   
 
 
-sources used: 
+#Sources:
 
 http://www.sthda.com/english/wiki/text-mining-and-word-cloud-fundamentals-in-r-5-simple-steps-you-should-know
 
