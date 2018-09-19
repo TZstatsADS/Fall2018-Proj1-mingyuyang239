@@ -308,19 +308,19 @@ ggplot(data = melted_topic, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile()
 ```
   
-We use a heatmap to visualized which topic is mensioned more frequently for each demographic group. From the heat map, we observe that "friend" is a topic that are mentioned the most for all four groups. Married parents seems to find more happiness in families than the other three groups.
+We use a heat map to visualized which topic is mentioned more frequently for each demographic group. From the heat map, we observe that "friend" is a topic that are mentioned the most for all four groups. Married parents seems to find more happiness in families than the other three groups.
 
 
 #Conclusion
 
-There aren't significant difference comparing single parents to other demographic groups. 
+There aren't significant differences comparing single parents to other demographic groups. 
 We did observe that with this set of samples, married parent seems to use longer sentences in describing their happy moments.
 
 By looking at the frequency of word，friend is an important aspect for single parents than married parents. Family related words appear less frequent for people who are married but don't have children.   
 
 One interesting finding is that single parent shows relatively more positive sentiments than other groups. 
 
-Among the three topics "job", "family" and "friend", "Friend" is mentioned the most for all four groups. Married parents seems to talk more about families than the other three groups.   
+Among the three topics "job", "family" and "friend", "friend" is mentioned the most for all four groups. Married parents seems to talk more about families than the other three groups.   
 
 
 #Sources:
