@@ -15,7 +15,9 @@ According to data published by the United States' Census Bureau, around 30% of c
 
 For our study, we will use the dataset HappyDB. It is a corpus of 100,000 happy moments gathered by the Amazon Mechanical Turk in 2017. We will compare data provided by single parent and married parent respectively. We will then study data provided by single and married non-parents and see if there exists similar trend as people with children. 
 
-The current R version I'm using and the necessary packages used are listed below. The original data are imported and we did some cleaning of the data. We removed punctuations, extra whitespace, empty words and numbers and converted upper case to lower case. We reduced words to their stems and removed meaningless stop words. We further combined the demographic data with the original data set. We then imported the demographic data to our cleaned data. We will use this cleaned and combined data for our analysis below.
+The current R version I'm using and the necessary packages used are listed below. The original data are imported and we did some cleaning of the data. We removed punctuations, extra whitespace, empty words and numbers and converted upper case to lower case. We reduced words to their stems and removed meaningless stop words. We further combined the demographic data with the original data set. We then imported the demographic data to our cleaned data. We will use this cleaned and combined data for our analysis below.  
+
+The four democraphics groups we will study are single parents, married parents, single-non-parents and married non-parents. 
 
 
 ```{r load libraries,warning=FALSE, message=FALSE}
@@ -101,8 +103,8 @@ From the plot, we observe that married parents wrote more words in descripting t
 ## Word Frequency with Wordcloud.
 
 We are going to examine the frequencies of words for each group and generate a word cloud for each demographic group.   
-
-
+  
+## Wordcloud for Single Parents.
 
 ```{r}
 #wordcloud for single parents. 
@@ -117,7 +119,8 @@ wordcloud(words = d.sp$word, freq = d.sp$freq, min.freq = 1,
           max.words=100, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
 ```
-
+  
+## Wordcloud for Married Parents
 ```{r}
 #wordcloud for married parents
 docs.mp <- Corpus(VectorSource(hm_data.mp$text))
@@ -133,7 +136,8 @@ wordcloud(words = d.mp$word, freq = d.mp$freq, min.freq = 1,
 ```
   
 The top three most frequent appearance words are "day", "time" and "friends" for single-parents and are "day", "time" and "son" for married parents. The word "friend" drops to the fifth place for married parents. This indicates friends may be a more important aspect of life for single parent. 
-
+  
+## Wordcould for Single Non-parents.
 ```{r}
 #wordcould for single non-parents.
 docs.s <- Corpus(VectorSource(hm_data.s$text))
@@ -147,7 +151,8 @@ wordcloud(words = d.s$word, freq = d.s$freq, min.freq = 1,
           max.words=100, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
 ```
-
+  
+## Wordcloud for Married Non-parents.
 ```{r}
 #wordcould for married non-parents.
 docs.m <- Corpus(VectorSource(hm_data.m$text))
