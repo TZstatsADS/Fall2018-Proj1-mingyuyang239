@@ -10,6 +10,7 @@ output:
 #An Analysis on Finding Happiness As Single Parents? How Do Experiences that Make Them Happy Compare to These for Married Parents and Non-parents?
 
 ![](/Users/mingyuyang/Documents/GitHub/Fall2018-Proj1-mingyuyang239/figs/cover.jpg)
+  
 According to data published by the United States' Census Bureau, around 30% of children in the United States are raised by single parents. There are many debates on whether single parents are as "good" as married ones. Those debates surround on topics including financial stability, psychological effect on children, social mobility and etc. These topics typically focus on the state of children instead of the parent herself/himself. An interesting question come in mind is what are the things that make single parents happy? Are they any different than those for married ones? How about comparing them to non-parents?
 
 For our study, we will use the dataset HappyDB. It is a corpus of 100,000 happy moments gathered by the Amazon Mechanical Turk in 2017. We will compare data provided by single parent and married parent respectively. We will then study data provided by single and married non-parents and see if there exists similar trend as people with children. 
@@ -94,6 +95,7 @@ ggplot(alldata, aes(count, status, color = status)) +
   labs(x = "Length of Sentences", y = "Demographic Groups")
 
 ```
+  
 From the plot, we observe that married parents wrote more words in descripting their experiences. These may be because we have more data on married parents comparing to the other three groups. 
 
 ## Word Frequency with Wordcloud.
@@ -193,7 +195,7 @@ bing.m <- bing(hm_data.m)$sentiment
 bing.vec <- data.frame(bing = c(bing.sp, bing.mp,bing.s,bing.m))
 ```
 
-```{r echo = T, results='hide'}
+```{r echo = T, results='hide',warning=FALSE, message=FALSE}
 
 afinn <- function(df){
 tokens <- data_frame(df$text) %>% unnest_tokens(word, df$text)
@@ -225,7 +227,7 @@ ggplot(melt.sentiments, aes(variable, value)) +
   
 The sentiment score for bing is calculated by taking the amount of positive words divided by negative words. The result shows that married parents have a slightly higher score than single parents. Parents generally shows more positive sentiments than non-parents.
   
-The sentiment score with afinnis calculated by taking the mean of scores in each group. Interestingly, The results shows that single parents have the highest score and single non-parents have the lowest score. Comparing the two methods, there aren't a significant different between all demographic groups. We observe that single parents have relatively high scores comparing to others for both methods.  
+The sentiment score with afinn is calculated by taking the mean of scores in each group. Interestingly, The results shows that single parents have the highest score and single non-parents have the lowest score. Comparing the two methods, there aren't a significant different between all demographic groups. We observe that single parents have relatively high scores comparing to others for both methods.  
 
 
 
@@ -233,7 +235,7 @@ The sentiment score with afinnis calculated by taking the mean of scores in each
 
 We will extract topics with fitting a LDA model. We tried setting the numbers of topics as three to six. It turns out that setting three topics number make the most sense. The beta matrix tells us the probabilities of each word being generated from each topic.  
   
-We see that the word accepted is generated from the topic 1 with a probability of 4.904230e-04. We visualized the top five most frequent words in each topics. According to those words, we manually tag each topic as "Family", "Job" and "Friend".
+We see that the word "accepted"" is generated from the topic 1 with a probability of 3.040925e-03. We visualized the top ten most frequent words in each topics. According to those words, we manually tag each topic as "Job", "Family",and "Friend".
 
 
 ```{r}
@@ -279,7 +281,7 @@ top.words %>%
 
 ```{r}
 topic.prob <- as.data.frame(lda@gamma)
-topics.tag <- c("Family", "Job", "Friend")
+topics.tag <- c( "Job", "Family","Friend")
 lda.topics <- as.matrix(topics(lda))
 combine.data$topic <- as.vector(lda.topics)
 combine.data$ldatag <- topics.tag[lda.topics]
@@ -291,7 +293,7 @@ combine.data.corpus <- cbind(combine.data,topic.prob)
 
 ```{r}
 topic.status<-tbl_df(combine.data.corpus)%>%
-              select(status, Family:Friend)%>%
+              select(status, Job:Friend)%>%
               group_by(status)%>%
               summarise_all(funs(mean))
 topic.status=as.data.frame(topic.status)
@@ -318,7 +320,7 @@ By looking at the frequency of word，friend is an important aspect for single p
 
 One interesting finding is that single parent shows relatively more positive sentiments than other groups. 
 
-Among the three topics "friend", "job" and "Friend", "Friend" is mentioned the most for all four groups. Married parents seems to talk more about families than the other three groups.   
+Among the three topics "job", "family" and "friend", "Friend" is mentioned the most for all four groups. Married parents seems to talk more about families than the other three groups.   
 
 
 #Sources:
